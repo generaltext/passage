@@ -26,7 +26,7 @@ normal `pnpm build` needs no network.
 
 - `src/data/airports.json` · `{ IATA: [name, city, countryA2, lat, lon] }`
 - `src/data/cities.json` · `[name, lat, lon, cc, admin1][]`, population-desc. Hybrid
-  gazetteer: every US populated place (GeoNames `US.txt`, feature class P — no
+  gazetteer: every US populated place (GeoNames `US.txt`, feature class P: no
   population floor, so tiny towns appear) + the rest of the world from
   `cities5000`. Powers place autocomplete + non-flight endpoint resolution. ~256k
   entries (~3.6 MB gzipped), lazy-loaded.
