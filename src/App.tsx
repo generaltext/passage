@@ -29,6 +29,10 @@ const PANELS: { id: PanelId; label: string; icon: React.ReactNode }[] = [
 ]
 
 let seedStarted = false
+// Bump when the demo seed data or schema changes: the "try it live" sandbox
+// persists in localStorage, so a stale/partial seed would otherwise linger
+// forever. A newer version re-seeds it fresh on next load.
+const DEMO_SEED_VERSION = '2'
 
 export default function App() {
   const store = useStore()
@@ -62,7 +66,22 @@ export default function App() {
       await window.gt.ready
       if (window.gt.mode === 'demo') {
         const files = await window.gt.listFiles()
-        if (!files.length) await seedDemo()
+        let seeded: string | null = null
+        try {
+          seeded = localStorage.getItem('passage:demo-seed')
+        } catch {
+          /* storage unavailable */
+        }
+        // (Re)seed when the sandbox is empty OR was seeded by an older build,
+        // so an early/partial demo (e.g. missing trips) heals itself.
+        if (!files.length || seeded !== DEMO_SEED_VERSION) {
+          await seedDemo()
+          try {
+            localStorage.setItem('passage:demo-seed', DEMO_SEED_VERSION)
+          } catch {
+            /* storage unavailable */
+          }
+        }
       }
     })()
   }, [])
