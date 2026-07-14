@@ -1,11 +1,12 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
-import { UserPlus, Info, Moon, Sun, List, BarChart3, Globe2, Plane } from 'lucide-react'
+import { UserPlus, Info, Moon, Sun, List, BarChart3, Globe2, Plane, Scroll, Image as ImageIcon } from 'lucide-react'
 import { PassageMark } from '~/components/PassageMark'
-import type { MapPick } from '~/components/WorldMap'
+import type { MapPick, MapStyle } from '~/components/WorldMap'
 
 // The globe pulls in three.js — lazy-load it so the shell + panels paint first
-// and three lands in its own chunk.
+// and three lands in its own chunk. The poster (d3-geo canvas) is likewise lazy.
 const WorldMap = lazy(() => import('~/components/WorldMap').then((m) => ({ default: m.WorldMap })))
+const PosterView = lazy(() => import('~/components/PosterView').then((m) => ({ default: m.PosterView })))
 import { TripDialog, StayDialog, PersonDialog } from '~/components/dialogs'
 import { LogPanel } from '~/components/LogPanel'
 import { StatsPanel } from '~/components/StatsPanel'
@@ -15,7 +16,7 @@ import { FormatPanel } from '~/components/FormatPanel'
 import { useStore } from '~/hooks/use-store'
 import { useGeo } from '~/hooks/use-geo'
 import { useTheme } from '~/hooks/use-theme'
-import { deriveGeo, unionRegions } from '~/lib/derive'
+import { deriveGeo } from '~/lib/derive'
 import { resolveEndpoint, haversineKm, type PlacePoint } from '~/lib/geo'
 import { seedDemo } from '~/lib/dev-seed'
 import type { Person, Stay, Trip } from '~/lib/types'
@@ -37,6 +38,14 @@ export default function App() {
 
   const [panel, setPanel] = useState<PanelId | null>('log')
   const [filter, setFilter] = useState<Set<string> | null>(null)
+  const [mapStyle, setMapStyle] = useState<MapStyle>(() => {
+    try {
+      return localStorage.getItem('passage:mapStyle') === 'paper' ? 'paper' : 'modern'
+    } catch {
+      return 'modern'
+    }
+  })
+  const [poster, setPoster] = useState(false)
   const [pick, setPick] = useState<MapPick | null>(null)
   const [tripDlg, setTripDlg] = useState<{ edit?: Trip } | null>(null)
   const [stayDlg, setStayDlg] = useState<{ edit?: Stay } | null>(null)
@@ -73,10 +82,23 @@ export default function App() {
   const mapView = useMemo(() => {
     if (!derived) return null
     const set = new Set(selIds)
+    // region code (a2 or "US-XX") -> ids of the selected people who visited it,
+    // so the map can tint one traveller's regions and hatch shared ones.
+    const regionPeople = new Map<string, string[]>()
+    const add = (code: string, id: string) => {
+      const arr = regionPeople.get(code)
+      if (arr) { if (!arr.includes(id)) arr.push(id) } else regionPeople.set(code, [id])
+    }
+    for (const id of selIds) {
+      const r = derived.byPerson[id]
+      if (!r) continue
+      for (const a2 of r.countries.keys()) add(a2, id)
+      for (const postal of r.states.keys()) add(`US-${postal}`, id)
+    }
     return {
       arcs: derived.arcs.filter((a) => a.personIds.some((p) => set.has(p))),
       points: derived.points.filter((p) => p.personIds.some((id) => set.has(id))),
-      ...unionRegions(derived.byPerson, selIds),
+      regionPeople,
     }
   }, [derived, selIds])
 
@@ -121,14 +143,15 @@ export default function App() {
           <WorldMap
             arcs={mapView.arcs}
             points={mapView.points}
-            visitedCountries={mapView.countries}
-            visitedStates={mapView.states}
+            regionPeople={mapView.regionPeople}
             paintRegion={paintRegion}
             colorOf={colorOf}
             onPick={setPick}
             highlightCode={pick?.kind === 'region' ? pick.code : null}
             resetKey={resetKey}
             focus={focus}
+            panels={{ left: !!panel && !empty, right: !!pick && !!derived }}
+            style={mapStyle}
           />
         </Suspense>
       ) : (
@@ -137,7 +160,7 @@ export default function App() {
 
       {/* TOP-LEFT: brand + panel tabs + person filter */}
       <div className="pointer-events-none absolute left-3 top-3 flex max-w-[calc(100%-1.5rem)] flex-col gap-2">
-        <div className="glass panel-shadow pointer-events-auto flex items-center gap-1 rounded-xl p-1">
+        <div className="glass panel-shadow pointer-events-auto flex items-center gap-1 rounded-lg p-1">
           <span className="flex items-center gap-1.5 pl-2 pr-1 text-accent">
             <PassageMark size={18} />
             <span className="font-serif text-[15px] font-semibold tracking-tight text-fg">Passage</span>
@@ -150,7 +173,7 @@ export default function App() {
               type="button"
               onClick={() => setPanel((cur) => (cur === p.id ? null : p.id))}
               aria-pressed={panel === p.id}
-              className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors ${
+              className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[13px] font-medium transition-colors ${
                 panel === p.id ? 'bg-accent text-accent-fg' : 'text-fg2 hover:bg-accent-tint hover:text-accent'
               }`}
             >
@@ -161,11 +184,11 @@ export default function App() {
         </div>
 
         {people.length > 1 && (
-          <div className="glass panel-shadow pointer-events-auto flex flex-wrap items-center gap-1 rounded-xl p-1">
+          <div className="glass panel-shadow pointer-events-auto flex flex-wrap items-center gap-1 rounded-lg p-1">
             <button
               type="button"
               onClick={() => setFilter(null)}
-              className={`rounded-lg px-2 py-1 text-[12px] font-semibold ${!filter ? 'bg-fg text-bg' : 'text-fg3 hover:text-fg2'}`}
+              className={`rounded-md px-2 py-1 text-[12px] font-semibold ${!filter ? 'bg-fg text-bg' : 'text-fg3 hover:text-fg2'}`}
             >
               Everyone
             </button>
@@ -176,7 +199,7 @@ export default function App() {
                   key={p.id}
                   type="button"
                   onClick={() => toggleFilter(p.id)}
-                  className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[12px] font-semibold transition-colors ${on ? 'text-white' : 'text-fg3 hover:text-fg2'}`}
+                  className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[12px] font-semibold transition-colors ${on ? 'text-white' : 'text-fg3 hover:text-fg2'}`}
                   style={on ? { backgroundColor: p.color } : undefined}
                 >
                   <span className="h-2 w-2 rounded-full" style={{ backgroundColor: on ? 'rgba(255,255,255,.9)' : p.color }} />
@@ -190,7 +213,28 @@ export default function App() {
 
       {/* TOP-RIGHT: info + theme */}
       <div className="absolute right-3 top-3 flex items-center gap-2">
-        <div className="glass panel-shadow flex items-center rounded-xl p-1">
+        <div className="glass panel-shadow flex items-center rounded-lg p-1">
+          {!empty && (
+            <IconBtn label="Create a poster" onClick={() => setPoster(true)}>
+              <ImageIcon size={17} />
+            </IconBtn>
+          )}
+          <IconBtn
+            label={mapStyle === 'paper' ? 'Map style: old paper (switch to modern)' : 'Map style: modern (switch to old paper)'}
+            onClick={() =>
+              setMapStyle((s) => {
+                const next = s === 'paper' ? 'modern' : 'paper'
+                try {
+                  localStorage.setItem('passage:mapStyle', next)
+                } catch {
+                  /* storage may be unavailable */
+                }
+                return next
+              })
+            }
+          >
+            {mapStyle === 'paper' ? <Globe2 size={17} /> : <Scroll size={17} />}
+          </IconBtn>
           <IconBtn label="Files & format" onClick={() => setFormatOpen(true)}>
             <Info size={17} />
           </IconBtn>
@@ -204,7 +248,7 @@ export default function App() {
 
       {/* LEFT PANEL */}
       {panel && !empty && (
-        <aside className="glass panel-shadow absolute bottom-3 left-3 top-[92px] z-[5] flex w-[min(380px,calc(100%-1.5rem))] flex-col overflow-hidden rounded-2xl sm:top-[104px]">
+        <aside className="glass panel-shadow absolute bottom-3 left-3 top-[92px] z-[5] flex w-[min(380px,calc(100%-1.5rem))] flex-col overflow-hidden rounded-xl sm:top-[104px]">
           {panel === 'log' && (
             <LogPanel
               people={people}
@@ -224,15 +268,7 @@ export default function App() {
           )}
           {panel === 'stats' && derived && <StatsPanel people={people} trips={trips} arcs={derived.arcs} selected={selected} onClose={() => setPanel(null)} />}
           {panel === 'places' && (
-            <PlacesPanel
-              people={people}
-              derived={derived}
-              rawPlaces={store.rawPlaces}
-              selectedPerson={singlePerson?.id}
-              appendPlaces={store.appendPlaces}
-              writePlacesText={store.writePlacesText}
-              onClose={() => setPanel(null)}
-            />
+            <PlacesPanel people={people} derived={derived} selected={selected} onPick={setPick} onClose={() => setPanel(null)} />
           )}
         </aside>
       )}
@@ -298,6 +334,12 @@ export default function App() {
         />
       )}
       <FormatPanel open={formatOpen} onClose={() => setFormatOpen(false)} people={people} trips={trips} stays={stays} placesByPerson={store.placesByPerson} geo={geo} />
+
+      {poster && derived && (
+        <Suspense fallback={null}>
+          <PosterView people={people} derived={derived} colorOf={colorOf} selected={selected} onClose={() => setPoster(false)} />
+        </Suspense>
+      )}
     </div>
   )
 }
@@ -330,7 +372,7 @@ function FocusOnSingle({ single, onFocus }: { single?: string; onFocus: () => vo
 
 function IconBtn({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button type="button" aria-label={label} title={label} onClick={onClick} className="rounded-lg p-1.5 text-fg3 hover:bg-accent-tint hover:text-accent">
+    <button type="button" aria-label={label} title={label} onClick={onClick} className="rounded-md p-1.5 text-fg3 hover:bg-accent-tint hover:text-accent">
       {children}
     </button>
   )
@@ -339,7 +381,7 @@ function IconBtn({ label, onClick, children }: { label: string; onClick: () => v
 function Onboarding({ onAddPerson, onAddTrip, hasPeople }: { onAddPerson: () => void; onAddTrip: () => void; hasPeople: boolean }) {
   return (
     <div className="pointer-events-none absolute inset-0 grid place-items-center p-6">
-      <div className="glass panel-shadow pointer-events-auto max-w-sm rounded-2xl p-7 text-center">
+      <div className="glass panel-shadow pointer-events-auto max-w-sm rounded-xl p-7 text-center">
         <span className="text-accent">
           <PassageMark size={40} />
         </span>
@@ -349,11 +391,11 @@ function Onboarding({ onAddPerson, onAddTrip, hasPeople }: { onAddPerson: () => 
           stay — the map paints itself.
         </p>
         <div className="mt-5 flex justify-center gap-2">
-          <button type="button" onClick={onAddPerson} className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3.5 py-2 text-sm font-semibold text-accent-fg hover:opacity-90">
+          <button type="button" onClick={onAddPerson} className="inline-flex items-center gap-1.5 rounded-md bg-accent px-3.5 py-2 text-sm font-semibold text-accent-fg hover:opacity-90">
             <UserPlus size={16} /> Add a person
           </button>
           {hasPeople && (
-            <button type="button" onClick={onAddTrip} className="inline-flex items-center gap-1.5 rounded-lg border border-line2 px-3.5 py-2 text-sm font-medium text-fg2 hover:bg-panel-2">
+            <button type="button" onClick={onAddTrip} className="inline-flex items-center gap-1.5 rounded-md border border-line2 px-3.5 py-2 text-sm font-medium text-fg2 hover:bg-panel-2">
               <Plane size={16} /> Add a trip
             </button>
           )}

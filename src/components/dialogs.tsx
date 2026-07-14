@@ -84,7 +84,7 @@ function EndpointInput({
         spellCheck={false}
       />
       {focus && suggestions.length > 0 && (
-        <ul className="glass panel-shadow absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-lg py-1">
+        <ul className="glass panel-shadow absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-md py-1">
           {suggestions.map((s, i) => (
             <li key={s.value + i}>
               <button
@@ -168,7 +168,7 @@ export function TripDialog({
               type="button"
               onClick={() => setType(tt)}
               aria-pressed={type === tt}
-              className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[13px] font-medium capitalize transition-colors ${
+              className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-[13px] font-medium capitalize transition-colors ${
                 type === tt ? 'border-accent bg-accent-tint text-accent' : 'border-line2 text-fg3 hover:text-fg2'
               }`}
             >
@@ -295,7 +295,7 @@ export function StayDialog({
           </Field>
         </div>
         <WhoRow people={people} who={who} setWho={setWho} />
-        <details className="rounded-lg border border-line px-3 py-2">
+        <details className="rounded-md border border-line px-3 py-2">
           <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wider text-fg3">Coordinates & note</summary>
           <div className="mt-3 space-y-3">
             <div className="grid grid-cols-2 gap-3">

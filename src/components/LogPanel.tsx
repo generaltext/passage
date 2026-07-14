@@ -117,7 +117,7 @@ export function LogPanel({
 function Row({ icon, iconClass, onFocus, onEdit, children, who }: { icon: React.ReactNode; iconClass: string; onFocus: () => void; onEdit: () => void; children: React.ReactNode; who: React.ReactNode }) {
   return (
     <div className="group relative">
-      <button type="button" onClick={onFocus} title="Show on the globe" className="flex w-full items-start gap-2.5 rounded-lg px-2 py-1.5 pr-8 text-left hover:bg-accent-tint">
+      <button type="button" onClick={onFocus} title="Show on the globe" className="flex w-full items-start gap-2.5 rounded-md px-2 py-1.5 pr-8 text-left hover:bg-accent-tint">
         <span className={`mt-0.5 ${iconClass}`}>{icon}</span>
         <span className="min-w-0 flex-1">{children}</span>
         <span className="mt-0.5 shrink-0 transition-opacity group-hover:opacity-0">{who}</span>
@@ -179,7 +179,7 @@ function AddBtn({ icon, label, onClick, disabled }: { icon: React.ReactNode; lab
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-accent px-2 py-1.5 text-[13px] font-semibold text-accent-fg transition-opacity hover:opacity-90 disabled:opacity-40"
+      className="inline-flex items-center justify-center gap-1.5 rounded-md bg-accent px-2 py-1.5 text-[13px] font-semibold text-accent-fg transition-opacity hover:opacity-90 disabled:opacity-40"
     >
       {icon}
       {label}

@@ -43,18 +43,18 @@ export function StatsPanel({
         </div>
 
         {stats.perYear.length > 1 && (
-          <div className="mt-3 rounded-xl border border-line bg-panel px-3 py-2.5">
+          <div className="mt-3 rounded-lg border border-line bg-panel px-3 py-2.5">
             <Label>By year</Label>
             <Spark data={stats.perYear} />
           </div>
         )}
 
         {stats.byType.length > 0 && (
-          <div className="mt-3 rounded-xl border border-line bg-panel px-3 py-2.5">
+          <div className="mt-3 rounded-lg border border-line bg-panel px-3 py-2.5">
             <Label>How</Label>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               {stats.byType.map((b) => (
-                <span key={b.type} className="inline-flex items-center gap-1.5 rounded-lg bg-panel-2 px-2 py-1 text-xs font-medium capitalize text-fg2">
+                <span key={b.type} className="inline-flex items-center gap-1.5 rounded-md bg-panel-2 px-2 py-1 text-xs font-medium capitalize text-fg2">
                   <TripTypeIcon type={b.type} size={13} /> {b.type} <span className="tnum text-fg3">{b.count}</span>
                 </span>
               ))}
@@ -63,7 +63,7 @@ export function StatsPanel({
         )}
 
         {(stats.longest || stats.topRoute || stats.first) && (
-          <div className="mt-3 rounded-xl border border-line bg-panel px-3 py-2.5">
+          <div className="mt-3 rounded-lg border border-line bg-panel px-3 py-2.5">
             <Label>Highlights</Label>
             <dl className="mt-1.5 space-y-1 text-[13px]">
               {stats.longest && <Row k="Longest" v={`${stats.longest.from} → ${stats.longest.to} · ${fmt(stats.longest.km / 1.609344)} mi`} />}
@@ -75,7 +75,7 @@ export function StatsPanel({
         )}
 
         {stats.countryList.length > 0 && (
-          <div className="mt-3 rounded-xl border border-line bg-panel px-3 py-2.5">
+          <div className="mt-3 rounded-lg border border-line bg-panel px-3 py-2.5">
             <Label>Countries</Label>
             <div className="mt-1.5 flex flex-wrap gap-1">
               {stats.countryList.map((a2) => (
@@ -92,7 +92,7 @@ export function StatsPanel({
             <Label>Per person</Label>
             <div className="mt-1.5 space-y-1">
               {perPerson.map(({ p, s }) => (
-                <div key={p.id} className="flex items-center gap-2 rounded-lg bg-panel px-2.5 py-1.5 text-[13px]">
+                <div key={p.id} className="flex items-center gap-2 rounded-md bg-panel px-2.5 py-1.5 text-[13px]">
                   <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: p.color }} />
                   <span className="flex-1 truncate font-medium">{p.name}</span>
                   <span className="tnum text-fg3">{fmt(s.trips)} trips</span>
@@ -109,7 +109,7 @@ export function StatsPanel({
 
 function Tile({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="rounded-xl border border-line bg-panel px-3 py-2.5">
+    <div className="rounded-lg border border-line bg-panel px-3 py-2.5">
       <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-fg3">{label}</div>
       <div className="mt-0.5 font-serif text-[22px] font-semibold leading-none tracking-tight tnum">{value}</div>
       {sub && <div className="mt-0.5 text-[11px] text-fg3 tnum">{sub}</div>}

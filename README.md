@@ -32,7 +32,13 @@ normal `pnpm build` needs no network.
   entries (~3.6 MB gzipped), lazy-loaded.
 - `src/data/countries.json` · `{ A2: [name, topojsonNumericId] }`
 - `src/data/us-states.json` · `{ Postal: [name, fipsId] }`
-- `src/data/world-110m.json`, `src/data/us-states-10m.json` · TopoJSON for the map
+- `src/data/world-10m.json` · Natural Earth 10m admin-0, simplified to ~12% of
+  vertices (mapshaper, `keep-shapes`) as TopoJSON (features carry `properties.a2`
+  + `properties.name`). Simplification matters: full 10m (~478k pts) froze the
+  main thread when globe.gl triangulated the country fills; ~12% (~61k pts, 222 KB
+  gz) stays crisp but triangulates fast. See `scripts/build-data.mjs` for the
+  `ogr2ogr` + `mapshaper` conversion.
+- `src/data/us-states-10m.json` · us-atlas states TopoJSON (revealed on zoom)
 
 ## Data format
 

@@ -33,7 +33,7 @@ export function Modal({
       ref={ref}
       onClose={onClose}
       onCancel={onClose}
-      className={`m-auto w-[calc(100vw-2rem)] rounded-2xl border border-line bg-panel p-0 text-fg shadow-xl backdrop:bg-black/40 ${
+      className={`m-auto w-[calc(100vw-2rem)] rounded-xl border border-line bg-panel p-0 text-fg shadow-xl backdrop:bg-black/40 ${
         wide ? 'max-w-2xl' : 'max-w-lg'
       }`}
     >
@@ -63,7 +63,7 @@ export function PanelHeader({ title, sub, right, onClose }: { title: string; sub
         {sub && <p className="truncate text-xs text-fg3">{sub}</p>}
       </div>
       {right}
-      <button type="button" onClick={onClose} aria-label="Close panel" className="rounded-lg p-1 text-fg3 hover:bg-accent-tint hover:text-accent">
+      <button type="button" onClick={onClose} aria-label="Close panel" className="rounded-md p-1 text-fg3 hover:bg-accent-tint hover:text-accent">
         <X size={17} />
       </button>
     </div>
@@ -89,7 +89,7 @@ export function Field({
 }
 
 export const inputClass =
-  'w-full rounded-lg border border-line2 bg-panel-2 px-3 py-2 text-sm text-fg placeholder:text-fg4 focus:border-accent focus:outline-none'
+  'w-full rounded-md border border-line2 bg-panel-2 px-3 py-2 text-sm text-fg placeholder:text-fg4 focus:border-accent focus:outline-none'
 
 export function Button({
   variant = 'default',
@@ -105,7 +105,7 @@ export function Button({
   return (
     <button
       type="button"
-      className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${styles} ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors ${styles} ${className}`}
       {...props}
     />
   )

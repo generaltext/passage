@@ -62,7 +62,7 @@ export function InspectorPanel({
   const total = tripList.length + stayList.length
 
   return (
-    <aside className="glass panel-shadow absolute bottom-3 right-3 top-[92px] z-[6] flex w-[min(340px,calc(100%-1.5rem))] flex-col overflow-hidden rounded-2xl sm:top-[104px]">
+    <aside className="glass panel-shadow absolute bottom-3 right-3 top-[92px] z-[6] flex w-[min(340px,calc(100%-1.5rem))] flex-col overflow-hidden rounded-xl sm:top-[104px]">
       <PanelHeader title={title} sub={total ? `${total} here` : 'nothing logged here yet'} onClose={onClose} />
       <div className="min-h-0 flex-1 overflow-y-auto p-2.5">
         {total === 0 && <p className="px-2 py-6 text-center text-sm text-fg3">Painted from your places list — no trip or stay recorded here.</p>}
@@ -72,7 +72,7 @@ export function InspectorPanel({
             <ul className="mb-2 space-y-1">
               {tripList.map((t) => (
                 <li key={t.id}>
-                  <button type="button" onClick={() => onEditTrip(t)} className="flex w-full items-start gap-2.5 rounded-lg px-2 py-1.5 text-left hover:bg-accent-tint">
+                  <button type="button" onClick={() => onEditTrip(t)} className="flex w-full items-start gap-2.5 rounded-md px-2 py-1.5 text-left hover:bg-accent-tint">
                     <span className="mt-0.5 text-accent">
                       <TripTypeIcon type={t.type} size={15} />
                     </span>
@@ -97,7 +97,7 @@ export function InspectorPanel({
             <ul className="space-y-1">
               {stayList.map((s) => (
                 <li key={s.id}>
-                  <button type="button" onClick={() => onEditStay(s)} className="flex w-full items-start gap-2.5 rounded-lg px-2 py-1.5 text-left hover:bg-accent-tint">
+                  <button type="button" onClick={() => onEditStay(s)} className="flex w-full items-start gap-2.5 rounded-md px-2 py-1.5 text-left hover:bg-accent-tint">
                     <span className="mt-0.5 text-fg2">
                       <Hotel size={15} />
                     </span>

@@ -196,8 +196,16 @@ try {
 writeFileSync(resolve(OUT, 'airports.json'), JSON.stringify(airports))
 writeFileSync(resolve(OUT, 'countries.json'), JSON.stringify(countries))
 writeFileSync(resolve(OUT, 'us-states.json'), JSON.stringify(US_STATES))
-copyFileSync(src('countries-110m.json'), resolve(OUT, 'world-110m.json'))
 copyFileSync(src('states-10m.json'), resolve(OUT, 'us-states-10m.json'))
+// world-10m.json (filled land; coastlines stay crisp when zoomed) is produced
+// out-of-band from Natural Earth 10m admin-0. It is SIMPLIFIED to ~12% of the
+// vertices: full 10m froze the main thread when globe.gl triangulates the fills.
+//   ogr2ogr -f GeoJSON ne10.min.geojson ne_10m_admin_0_countries.geojson \
+//     -dialect OGRSQL -sql 'SELECT ISO_A2_EH AS a2, NAME AS name FROM "ne_10m_admin_0_countries"'
+//   npx mapshaper ne10.min.geojson -simplify 12% keep-shapes \
+//     -o precision=0.001 format=topojson src/data/world-10m.json
+//   # then rename the topojson object key to "countries"
+// (kept committed; features carry properties.a2 + properties.name)
 
 const n = Object.keys(airports).length
 console.log(`airports: ${n} with IATA`)

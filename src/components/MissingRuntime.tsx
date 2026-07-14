@@ -9,7 +9,7 @@ export default function MissingRuntime({ onTryDemo }: { onTryDemo: () => void })
 
   return (
     <div className="flex min-h-full items-center justify-center bg-bg px-6 py-12 text-fg">
-      <div className="w-full max-w-md space-y-5 rounded-2xl border border-line bg-panel p-7 shadow-sm">
+      <div className="w-full max-w-md space-y-5 rounded-xl border border-line bg-panel p-7 shadow-sm">
         <div className="flex items-center gap-3">
           <span className="text-accent">
             <PassageMark size={26} />

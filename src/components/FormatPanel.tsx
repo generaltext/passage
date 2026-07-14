@@ -79,7 +79,7 @@ function Block({ file, desc, code }: { file: string; desc: string; code: string 
     <div>
       <code className="font-mono text-[13px] font-semibold text-accent">{file}</code>
       <p className="mt-0.5 text-[13px] text-fg3">{desc}</p>
-      <pre className="mt-1.5 overflow-x-auto rounded-lg bg-panel-2 px-3 py-2 font-mono text-xs text-fg2">{code}</pre>
+      <pre className="mt-1.5 overflow-x-auto rounded-md bg-panel-2 px-3 py-2 font-mono text-xs text-fg2">{code}</pre>
     </div>
   )
 }

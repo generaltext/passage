@@ -7,7 +7,7 @@
 import COUNTRIES_RAW from '~/data/countries.json'
 import US_STATES_RAW from '~/data/us-states.json'
 
-export type Airport = { iata: string; name: string; city: string; a2: string; lat: number; lon: number }
+export type Airport = { iata: string; name: string; city: string; a2: string; lat: number; lon: number; state?: string }
 
 /** a2 -> [displayName, topojsonNumericId] */
 const COUNTRIES = COUNTRIES_RAW as unknown as Record<string, [string, string]>
@@ -54,10 +54,10 @@ let airportsPromise: Promise<Record<string, Airport>> | null = null
 export function loadAirports(): Promise<Record<string, Airport>> {
   if (!airportsPromise) {
     airportsPromise = import('~/data/airports.json').then((m) => {
-      const raw = m.default as unknown as Record<string, [string, string, string, number, number]>
+      const raw = m.default as unknown as Record<string, [string, string, string, number, number, string?]>
       const out: Record<string, Airport> = {}
-      for (const [iata, [name, city, a2, lat, lon]] of Object.entries(raw)) {
-        out[iata] = { iata, name, city, a2, lat, lon }
+      for (const [iata, [name, city, a2, lat, lon, state]] of Object.entries(raw)) {
+        out[iata] = state ? { iata, name, city, a2, lat, lon, state } : { iata, name, city, a2, lat, lon }
       }
       return out
     })
@@ -134,7 +134,9 @@ export function resolveEndpoint(
   const up = t.toUpperCase()
   if (/^[A-Z]{3}$/.test(up) && index.airports[up]) {
     const a = index.airports[up]!
-    return { lat: a.lat, lon: a.lon, label: `${a.city} · ${up}`, a2: a.a2, kind: 'airport' }
+    const pt: PlacePoint = { lat: a.lat, lon: a.lon, label: `${a.city} · ${up}`, a2: a.a2, kind: 'airport' }
+    if (a.state) pt.state = a.state // so a US flight paints the state too
+    return pt
   }
   return resolveCity(index.cities, t)
 }
